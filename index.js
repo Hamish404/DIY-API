@@ -19,12 +19,64 @@ app.get("/random", (req, res) => {
 
 //2. GET a specific joke
 
-app.get(`/jokes`, (req, res) => {
-  console.log(req.body);
+app.get('/jokes/:jokeId', (req, res) => {
+  const jokeId = req.params.jokeId;
+  res.json(jokes[jokeId - 1]);
 });
 
 
 //3. GET a jokes by filtering on the joke type
+
+app.get('/filter', (req, res) => {
+  const jokeType = req.query.type;
+
+  if (!jokeType) {
+    res.status(400).send("Please provide a joke type");
+  }
+
+  const jokeTypePuns = jokes.filter(joke => joke.jokeType === "Puns");
+  const jokeTypeScience = jokes.filter(joke => joke.jokeType === "Science");
+  const jokeTypeWordplay = jokes.filter(joke => joke.jokeType === "Wordplay");
+  const jokeTypeMath = jokes.filter(joke => joke.jokeType === "Math");
+  const jokeTypeSports = jokes.filter(joke => joke.jokeType === "Sports");
+  const jokeTypeMovies = jokes.filter(joke => joke.jokeType === "Movies");
+  const jokeTypeFood = jokes.filter(joke => joke.jokeType === "Food");
+
+  switch (jokeType) {
+    case "Puns":
+      res.json(jokeTypePuns);
+      break;
+
+    case "Science":
+      res.json(jokeTypeScience);
+      break;
+      
+    case "Wordplay":
+      res.json(jokeTypeWordplay);
+      break;
+
+    case "Math":
+      res.json(jokeTypeMath);
+      break;
+
+    case "Sports":
+      res.json(jokeTypeSports);
+      break;
+
+    case "Movies":
+      res.json(jokeTypeMovies);
+      break;
+
+    case "Food":
+      res.json(jokeTypeFood);
+      break;
+    
+    default:
+      res.status(400).send("Invalid joke type");
+      break;
+  }
+});
+
 
 //4. POST a new joke
 
