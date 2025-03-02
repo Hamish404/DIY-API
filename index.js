@@ -3,11 +3,19 @@ import bodyParser from "body-parser";
 
 const app = express();
 const port = 3000;
-const masterKey = "4VGP2DN-6EWM4SJ-N6FGRHV-Z3PR3TT";
-
-let id;
+const MASTER_KEY = "4VGP2DN-6EWM4SJ-N6FGRHV-Z3PR3TT";
 
 app.use(bodyParser.urlencoded({ extended: true }));
+
+function authenticateAdmin(req, res, next) {
+  const masterKey = req.headers['x-admin-key'];
+
+  if (masterKey === MASTER_KEY) {
+    next();
+  } else {
+    return res.status(403).send("Unauthorized");
+  }
+}
 
 //1. GET a random joke
 
@@ -113,7 +121,7 @@ app.put('/jokes/:jokeId', (req, res) => {
   }
 
   if (!newJokeText || !newJokeType) {
-    res.status(400).send("Missing joke or type");
+    res.status(400).send("Missing joke text or type");
   }
 
   const newJoke = {
@@ -123,15 +131,61 @@ app.put('/jokes/:jokeId', (req, res) => {
   };
 
   jokes[jokeId - 1] = newJoke;
-  res.status(200).send(newJoke);
+  res.status(201).send(newJoke);
 })
 
 
 //6. PATCH a joke
 
-//7. DELETE Specific joke
+app.patch('/jokes/:id', (req, res) => {
+  const newJokeText = req.body.text;
+  const newJokeType = req.body.type;
+  const jokeId = parseInt(req.params.id, 10);
 
-//8. DELETE All jokes
+  if (isNaN(jokeId)) {
+    return res.status(400).send("Invalid jokeId. Must be a number.");
+  }
+
+  if (!newJokeText || !newJokeType) {
+    return res.status(400).send("Missing joke text or type");
+  };
+
+  const newJoke = {
+    id: jokeId,
+    jokeText: newJokeText,
+    jokeType: newJokeType
+  };
+
+  jokes[jokeId - 1] = newJoke;
+  res.status(200).send(newJoke);
+});
+
+
+//7. DELETE All jokes
+
+app.delete('/jokes/all', authenticateAdmin, (req, res) => {
+  jokes = [];
+  res.status(200).send('All jokes deleted');
+})
+
+
+//8. DELETE Specific joke
+
+app.delete('/jokes/:id', (req, res) => {
+  const jokeId = parseInt(req.params.id, 10);
+
+  if (isNaN(jokeId)) {
+    return res.status(400).send("Invalid jokeId. Must be a number.");
+  }
+
+  if (jokeId > 0 && jokeId <= jokes.length) {
+    jokes.splice(jokeId - 1, 1);
+    return res.status(200).send("Joke deleted");
+  } else {
+    return res.status(404).send("Joke not found");
+  }
+})
+
 
 app.listen(port, () => {
   console.log(`Successfully started server on port ${port}.`);
