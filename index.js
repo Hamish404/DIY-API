@@ -28,8 +28,19 @@ app.get("/random", (req, res) => {
 //2. GET a specific joke
 
 app.get('/jokes/:jokeId', (req, res) => {
-  const jokeId = req.params.jokeId;
-  res.json(jokes[jokeId - 1]);
+  const jokeId = parseInt(req.params.jokeId, 10);
+  
+  if (isNaN(jokeId)) {
+    return res.status(400).send("Invalid jokeId. Must be a number.");
+  }
+
+  const foundJoke = jokes.find(joke => joke.id === jokeId);
+
+  if (foundJoke) {
+    res.json(foundJoke);
+  } else {
+    res.status(404).send("Joke not found");
+  }
 });
 
 
@@ -151,7 +162,6 @@ app.delete('/jokes/:id', (req, res) => {
     return res.status(404).send("Joke not found");
   }
 })
-
 
 app.listen(port, () => {
   console.log(`Successfully started server on port ${port}.`);
