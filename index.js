@@ -7,8 +7,6 @@ const MASTER_KEY = "4VGP2DN-6EWM4SJ-N6FGRHV-Z3PR3TT";
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Get the llm to do a once-over of the code
-
 function authenticateAdmin(req, res, next) {
   const masterKey = req.headers['x-admin-key'];
 
