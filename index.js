@@ -98,9 +98,9 @@ app.put('/jokes/:jokeId', (req, res) => {
   }
   
   if (!newJokeText || !newJokeType) {
-  return !newJokeText
-    ? res.status(400).send("Missing joke text")
-    : res.status(400).send("Missing joke type");
+    return !newJokeText
+      ? res.status(400).send("Missing joke text")
+      : res.status(400).send("Missing joke type");
   };
   
   const existingJokeIndex = jokes.findIndex(joke => joke.id === jokeId);
@@ -122,27 +122,41 @@ app.put('/jokes/:jokeId', (req, res) => {
 
 //6. PATCH a joke
 
-app.patch('/jokes/:id', (req, res) => {
-  const newJokeText = req.body.text;
-  const newJokeType = req.body.type;
-  const jokeId = parseInt(req.params.id, 10);
+app.patch('/jokes/:jokeId', (req, res) => {
+  const jokeId = parseInt(req.params.jokeId, 10);
+  const patchJokeText = req.body.text;
+  const patchJokeType = req.body.type;
 
   if (isNaN(jokeId)) {
     return res.status(400).send("Invalid jokeId. Must be a number.");
   }
 
-  if (!newJokeText || !newJokeType) {
-    return res.status(400).send("Missing joke text or type");
-  };
+  const existingJokeIndex = jokes.findIndex(joke => joke.id === jokeId);
 
-  const newJoke = {
-    id: jokeId,
-    jokeText: newJokeText,
-    jokeType: newJokeType
-  };
+  if (existingJokeIndex === -1) {
+    return res.status(404).send("Joke not found");
+  }
 
-  jokes[jokeId - 1] = newJoke;
-  res.status(200).send(newJoke);
+  const existingJoke = jokes[existingJokeIndex];
+  const patchedJoke = { ...existingJoke };
+
+  if (patchJokeText !== undefined) {
+    if (patchJokeText === "") {
+      return res.status(400).send("Joke text cannot be empty");
+    }
+    patchedJoke.jokeText = patchJokeText;
+  }
+
+  if (patchJokeType !== undefined) {
+    if (patchJokeType === "") {
+      return res.status(400).send("Joke type cannot be empty");
+    }
+    patchedJoke.jokeType = patchJokeType;
+  }
+
+  jokes[existingJokeIndex] = patchedJoke;
+
+  res.status(200).send(patchedJoke);
 });
 
 
