@@ -170,20 +170,22 @@ app.delete('/jokes/all', authenticateAdmin, (req, res) => {
 
 //8. DELETE Specific joke
 
-app.delete('/jokes/:id', (req, res) => {
-  const jokeId = parseInt(req.params.id, 10);
+app.delete('/jokes/:jokeId', (req, res) => {
+  const jokeId = parseInt(req.params.jokeId, 10);
 
   if (isNaN(jokeId)) {
     return res.status(400).send("Invalid jokeId. Must be a number.");
   }
 
-  if (jokeId > 0 && jokeId <= jokes.length) {
-    jokes.splice(jokeId - 1, 1);
+  const existingJokeIndex = jokes.findIndex(joke => joke.id === jokeId);
+
+  if (existingJokeIndex !== -1) {
+    jokes.splice(existingJokeIndex, 1);
     return res.status(200).send("Joke deleted");
   } else {
     return res.status(404).send("Joke not found");
   }
-})
+});
 
 app.listen(port, () => {
   console.log(`Successfully started server on port ${port}.`);
