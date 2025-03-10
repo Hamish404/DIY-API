@@ -97,7 +97,7 @@ app.put('/jokes/:jokeId', (req, res) => {
     return res.status(400).send("Invalid jokeId. Must be a number.");
   }
 
-  if (!newJokeText || !newJokeType) {
+  if (!newJokeText || !newJokeType || "") {
     res.status(400).send("Missing joke text or type");
   }
 
@@ -107,8 +107,14 @@ app.put('/jokes/:jokeId', (req, res) => {
     jokeType: newJokeType,
   };
 
-  jokes[jokeId - 1] = newJoke;
-  res.status(201).send(newJoke);
+  const existingJokeIndex = jokes.findIndex(joke => joke.id === jokeId);
+
+  if (existingJokeIndex !== -1) {
+    jokes[existingJokeIndex] = newJoke;
+    res.status(200).send(newJoke);
+  } else {
+    res.status(404).send("Joke not found");
+  }
 })
 
 
