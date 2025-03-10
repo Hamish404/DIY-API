@@ -13,15 +13,19 @@ function authenticateAdmin(req, res, next) {
   if (masterKey === MASTER_KEY) {
     next();
   } else {
-    return res.status(403).send("Unauthorized");
+    return res.status(403).json("Unauthorized");
   }
 }
 
 //1. GET a random joke
 
 app.get("/random", (req, res) => {
-  const randomIndex = Math.floor(Math.random() * 100);
-  res.json(jokes[randomIndex]);
+  if (jokes.length === 0) {
+    return res.status(404).json("Joke not found");
+  } else {
+    const randomIndex = Math.floor(Math.random() * 100);
+    res.status(200).json(jokes[randomIndex]);
+  }
 });
 
 
@@ -31,15 +35,15 @@ app.get('/jokes/:jokeId', (req, res) => {
   const jokeId = parseInt(req.params.jokeId, 10);
   
   if (isNaN(jokeId)) {
-    return res.status(400).send("Invalid jokeId. Must be a number.");
+    return res.status(400).json("Invalid jokeId. Must be a number.");
   }
 
   const foundJoke = jokes.find(joke => joke.id === jokeId);
 
   if (foundJoke) {
-    res.json(foundJoke);
+    res.status(200).json(foundJoke);
   } else {
-    res.status(404).send("Joke not found");
+    res.status(404).json("Joke not found");
   }
 });
 
@@ -50,16 +54,16 @@ app.get('/filter', (req, res) => {
   const jokeType = req.query.type;
 
   if (!jokeType) {
-    res.status(400).send("Please provide a joke type");
+    res.status(400).json("Please provide a joke type");
   }
 
   const filteredJokes = jokes.filter(joke => joke.jokeType === jokeType);
 
   if (filteredJokes.length === 0) {
-    return res.status(404).send("No jokes found for that type.");
+    return res.status(404).json("No jokes found for that type.");
   }
 
-  res.json(filteredJokes);
+  res.status(200).json(filteredJokes);
 });
 
 
@@ -71,7 +75,7 @@ app.post('/jokes', (req, res) => {
   const newId = jokes.length + 1;
 
   if (!newJokeText || !newJokeType) {
-    return res.status(400).send("Missing joke text or type.");
+    return res.status(400).json("Missing joke text or type.");
   };
 
   const newJoke = {
@@ -82,7 +86,6 @@ app.post('/jokes', (req, res) => {
 
   jokes.push(newJoke);
   res.status(201).json(newJoke);
-
 });
 
 
@@ -94,13 +97,13 @@ app.put('/jokes/:jokeId', (req, res) => {
   const jokeId = parseInt(req.params.jokeId, 10);
   
   if (isNaN(jokeId)) {
-  return res.status(400).send("Invalid jokeId. Must be a number.");
+  return res.status(400).json("Invalid jokeId. Must be a number.");
   }
   
   if (!newJokeText || !newJokeType) {
     return !newJokeText
-      ? res.status(400).send("Missing joke text")
-      : res.status(400).send("Missing joke type");
+      ? res.status(400).json("Missing joke text")
+      : res.status(400).json("Missing joke type");
   };
   
   const existingJokeIndex = jokes.findIndex(joke => joke.id === jokeId);
@@ -113,9 +116,9 @@ app.put('/jokes/:jokeId', (req, res) => {
   };
 
     jokes[existingJokeIndex] = newJoke;
-    res.status(200).send(newJoke);
+    res.status(200).json(newJoke);
   } else {
-    res.status(404).send("Joke not found");
+    res.status(404).json("Joke not found");
   }
 });
 
@@ -128,13 +131,13 @@ app.patch('/jokes/:jokeId', (req, res) => {
   const patchJokeType = req.body.type;
 
   if (isNaN(jokeId)) {
-    return res.status(400).send("Invalid jokeId. Must be a number.");
+    return res.status(400).json("Invalid jokeId. Must be a number.");
   }
 
   const existingJokeIndex = jokes.findIndex(joke => joke.id === jokeId);
 
   if (existingJokeIndex === -1) {
-    return res.status(404).send("Joke not found");
+    return res.status(404).json("Joke not found");
   }
 
   const existingJoke = jokes[existingJokeIndex];
@@ -142,21 +145,21 @@ app.patch('/jokes/:jokeId', (req, res) => {
 
   if (patchJokeText !== undefined) {
     if (patchJokeText === "") {
-      return res.status(400).send("Joke text cannot be empty");
+      return res.status(400).json("Joke text cannot be empty");
     }
     patchedJoke.jokeText = patchJokeText;
   }
 
   if (patchJokeType !== undefined) {
     if (patchJokeType === "") {
-      return res.status(400).send("Joke type cannot be empty");
+      return res.status(400).json("Joke type cannot be empty");
     }
     patchedJoke.jokeType = patchJokeType;
   }
 
   jokes[existingJokeIndex] = patchedJoke;
 
-  res.status(200).send(patchedJoke);
+  res.status(200).json(patchedJoke);
 });
 
 
@@ -164,7 +167,7 @@ app.patch('/jokes/:jokeId', (req, res) => {
 
 app.delete('/jokes/all', authenticateAdmin, (req, res) => {
   jokes = [];
-  res.status(200).send('All jokes deleted');
+  res.status(200).json('All jokes deleted');
 })
 
 
@@ -174,16 +177,16 @@ app.delete('/jokes/:jokeId', (req, res) => {
   const jokeId = parseInt(req.params.jokeId, 10);
 
   if (isNaN(jokeId)) {
-    return res.status(400).send("Invalid jokeId. Must be a number.");
+    return res.status(400).json("Invalid jokeId. Must be a number.");
   }
 
   const existingJokeIndex = jokes.findIndex(joke => joke.id === jokeId);
 
   if (existingJokeIndex !== -1) {
     jokes.splice(existingJokeIndex, 1);
-    return res.status(200).send("Joke deleted");
+    return res.status(200).json("Joke deleted");
   } else {
-    return res.status(404).send("Joke not found");
+    return res.status(404).json("Joke not found");
   }
 });
 
