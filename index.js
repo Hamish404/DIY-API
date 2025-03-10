@@ -92,34 +92,32 @@ app.put('/jokes/:jokeId', (req, res) => {
   const newJokeText = req.body.text;
   const newJokeType = req.body.type;
   const jokeId = parseInt(req.params.jokeId, 10);
-
+  
   if (isNaN(jokeId)) {
-    return res.status(400).send("Invalid jokeId. Must be a number.");
+  return res.status(400).send("Invalid jokeId. Must be a number.");
   }
-
-  if (!newJokeText || !newJokeType || "") {
-    res.status(400).send("Missing joke text or type");
-  }
-
-  if (!jokeId || jokeId > jokes.length) {
-    res.status(400).send("Invalid jokeid. Jokeid must exist.");
-  }
-
-  const newJoke = {
-    id: jokeId, 
+  
+  if (!newJokeText || !newJokeType) {
+  return !newJokeText
+    ? res.status(400).send("Missing joke text")
+    : res.status(400).send("Missing joke type");
+  };
+  
+  const existingJokeIndex = jokes.findIndex(joke => joke.id === jokeId);
+  
+  if (existingJokeIndex !== -1) {
+    const newJoke = {
+    id: jokeId,
     jokeText: newJokeText,
     jokeType: newJokeType,
   };
 
-  const existingJokeIndex = jokes.findIndex(joke => joke.id === jokeId);
-
-  if (existingJokeIndex !== -1) {
     jokes[existingJokeIndex] = newJoke;
     res.status(200).send(newJoke);
   } else {
     res.status(404).send("Joke not found");
   }
-})
+});
 
 
 //6. PATCH a joke
