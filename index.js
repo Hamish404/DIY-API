@@ -101,6 +101,10 @@ app.put('/jokes/:jokeId', (req, res) => {
     res.status(400).send("Missing joke text or type");
   }
 
+  if (!jokeId || jokeId > jokes.length) {
+    res.status(400).send("Invalid jokeid. Jokeid must exist.");
+  }
+
   const newJoke = {
     id: jokeId, 
     jokeText: newJokeText,
